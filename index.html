@@ -2,277 +2,162 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sürpriz 💖</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #ffd6e8, #ffeaf2);
-      height: 100vh;
+      font-family: 'Comic Neue', cursive;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      margin: 0;
       overflow: hidden;
     }
-
     .container {
-      width: 90%;
-      max-width: 360px;
       text-align: center;
+      width: 90%;
+      max-width: 400px;
     }
-
-    .question {
-      font-size: 1.2rem;
-      margin-bottom: 1.5rem;
-      font-weight: 600;
-      color: #ff4d88;
-      word-wrap: break-word;
-    }
-
-    .options {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-
-    button {
-      padding: 0.8rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 12px;
-      background: #ff99cc;
-      color: white;
-      font-weight: bold;
-      transition: transform 0.3s ease, background 0.3s ease;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #ff4d88;
-      transform: scale(1.05);
-    }
-
-    .final-text {
+    .question, .finalMessage {
       font-size: 1.4rem;
-      color: #d6336c;
-      font-weight: bold;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.6s forwards;
+      margin-bottom: 20px;
+      animation: fadeIn 0.8s ease;
     }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    .emoji-response {
+    .options button {
+      background: #fff;
+      border: none;
+      border-radius: 25px;
+      padding: 12px 25px;
+      margin: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .options button:hover {
+      transform: scale(1.1);
+    }
+    .emoji {
       font-size: 2rem;
-      margin-top: 1rem;
-      opacity: 0;
-      transform: scale(0.5);
-      animation: popIn 0.5s forwards;
+      margin-top: 10px;
+      animation: popIn 0.6s ease;
     }
-
     @keyframes popIn {
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
     }
-
-    .confetti {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1000;
+    .finalMessage {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #fff;
+      margin-top: 20px;
+      min-height: 50px;
     }
-
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-
-    .big {
-      animation: pop 0.4s ease;
-      transform: scale(1.3);
-      z-index: 999;
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="question-container"></div>
-    <div id="options-container" class="options"></div>
-    <div id="emoji-container"></div>
+    <div id="questionContainer" class="question"></div>
+    <div class="options" id="options"></div>
+    <div id="emojiContainer"></div>
+    <div id="finalMessage" class="finalMessage hidden"></div>
   </div>
-
-  <canvas class="confetti" id="confettiCanvas"></canvas>
 
   <script>
     const questions = [
-      {
-        text: "Bugün kendinizi nasıl hissediyorsunuz eloş hanım?",
-        options: ["Çok iyi 😍", "İyi 🙂", "Kötü 😢"],
-        emojis: ["🥳", "😊", "😔"]
-      },
-      {
-        text: "Bu yıl akademik olarak başarılı olacağını düşünüyor musun?",
-        options: ["Evet 💪", "Hayır 😴"],
-        emojis: ["📚✨", "😴💤"]
-      },
-      {
-        text: "Sence yıllar sonra evlenir miyiz?",
-        options: ["Evet 💍", "Hayır 🤔"],
-        emojis: ["💒", "🙃"]
-      },
-      {
-        text: "Sence ben gerçekten seni seviyor muyum?",
-        options: ["Evet ❤️", "Hayır 🙄"],
-        emojis: ["❤️", "😒"]
-      }
+      { q: "Bugün kendinizi nasıl hissediyorsunuz eloş hanım?", a: ["Çok iyi", "İdare eder", "Daha iyi olabilirdi"] },
+      { q: "Bu yıl akademik olarak başarılı olacağını düşünüyor musun?", a: ["Evet", "Belki", "Hayır"] },
+      { q: "Sence yıllar sonra evlenir miyiz?", a: ["Kesinlikle", "Belki", "Sanmam"] },
+      { q: "Sence ben gerçekten seni seviyor muyum?", a: ["Evet", "Hayır 🙄"] }
     ];
 
+    const emojis = ["😊", "🥰", "😍", "🤭", "💖"];
     let currentQuestion = 0;
-    let hayirClickCount = 0;
 
-    const questionContainer = document.getElementById("question-container");
-    const optionsContainer = document.getElementById("options-container");
-    const emojiContainer = document.getElementById("emoji-container");
+    const questionContainer = document.getElementById("questionContainer");
+    const optionsContainer = document.getElementById("options");
+    const emojiContainer = document.getElementById("emojiContainer");
+    const finalMessage = document.getElementById("finalMessage");
 
     function showQuestion() {
-      const q = questions[currentQuestion];
-      questionContainer.innerHTML = `<div class="question">${q.text}</div>`;
-      optionsContainer.innerHTML = "";
-      emojiContainer.innerHTML = "";
-
-      q.options.forEach((option, index) => {
-        const btn = document.createElement("button");
-        btn.textContent = option;
-        btn.onclick = () => handleAnswer(index);
-        optionsContainer.appendChild(btn);
-      });
+      if (currentQuestion < questions.length) {
+        const q = questions[currentQuestion];
+        questionContainer.textContent = q.q;
+        optionsContainer.innerHTML = "";
+        q.a.forEach(answer => {
+          const btn = document.createElement("button");
+          btn.textContent = answer;
+          btn.onclick = () => handleAnswer();
+          optionsContainer.appendChild(btn);
+        });
+      } else {
+        showFinalMessage();
+      }
     }
 
-    function handleAnswer(index) {
-      const q = questions[currentQuestion];
+    function handleAnswer() {
       optionsContainer.innerHTML = "";
-      emojiContainer.innerHTML = `<div class="emoji-response">${q.emojis[index]}</div>`;
+      questionContainer.textContent = "";
+      const emoji = document.createElement("div");
+      emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      emoji.className = "emoji";
+      emojiContainer.innerHTML = "";
+      emojiContainer.appendChild(emoji);
 
       setTimeout(() => {
-        if (currentQuestion < questions.length - 1) {
-          currentQuestion++;
-          showQuestion();
-        } else {
-          showFinal();
-        }
-      }, 1200); // 1.2 saniye sonra diğer soruya geç
+        emojiContainer.innerHTML = "";
+        currentQuestion++;
+        showQuestion();
+      }, 1200);
     }
 
-    function showFinal() {
-      questionContainer.innerHTML = "";
-      optionsContainer.innerHTML = "";
-      emojiContainer.innerHTML = "";
-
-      const texts = ["Neyse ela...", "Uzun lafın kısası...", "💖 SEVGİLİM OLUR MUSUNN? 💖"];
-      let i = 0;
-
-      function showNextText() {
-        if (i < texts.length) {
-          const textElem = document.createElement("div");
-          textElem.className = "final-text";
-          textElem.style.animationDelay = `${i * 0.5}s`;
-          textElem.textContent = texts[i];
-          questionContainer.appendChild(textElem);
-          i++;
-          setTimeout(showNextText, 500);
-        } else {
-          showFinalOptions();
-        }
-      }
-      showNextText();
+    function showFinalMessage() {
+      finalMessage.classList.remove("hidden");
+      typeWriter("ELAAA... UZUN LAFIN KISASI... SEVGİLİM OLUR MUSUN 💍");
+      showYesNoButtons();
     }
 
-    function showFinalOptions() {
-      optionsContainer.innerHTML = "";
-      const yesBtn = document.createElement("button");
-      yesBtn.textContent = "Evet 💍";
-      yesBtn.onclick = () => celebrate();
-
-      const noBtn = document.createElement("button");
-      noBtn.textContent = "Hayır 🙃";
-      noBtn.onclick = () => {
-        hayirClickCount++;
-        yesBtn.classList.add("big");
-
-        setTimeout(() => yesBtn.classList.remove("big"), 400);
-
-        if (hayirClickCount >= 2) {
-          noBtn.remove();
-          yesBtn.style.margin = "0 auto";
-          yesBtn.style.display = "block";
-        }
-      };
-
-      optionsContainer.appendChild(yesBtn);
-      optionsContainer.appendChild(noBtn);
+    function typeWriter(text, i = 0) {
+      if (i < text.length) {
+        finalMessage.textContent += text.charAt(i);
+        setTimeout(() => typeWriter(text, i + 1), 120);
+      }
     }
 
-    function celebrate() {
-      questionContainer.innerHTML = `<div class="final-text">🎉 Seni Seviyorum! 🎉</div>`;
-      optionsContainer.innerHTML = "";
-      emojiContainer.innerHTML = "";
+    function showYesNoButtons() {
+      setTimeout(() => {
+        optionsContainer.innerHTML = `
+          <button id="yesBtn">Evet 💖</button>
+          <button id="noBtn">Hayır 🙃</button>
+        `;
+        let yesBtn = document.getElementById("yesBtn");
+        let noBtn = document.getElementById("noBtn");
+        let noClicks = 0;
 
-      const canvas = document.getElementById("confettiCanvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const confetti = [];
-      for (let i = 0; i < 150; i++) {
-        confetti.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height - canvas.height,
-          r: Math.random() * 6 + 4,
-          d: Math.random() * 50,
-          color: `hsl(${Math.random() * 360},100%,50%)`,
-          tilt: Math.random() * 10 - 10
-        });
-      }
-
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        confetti.forEach(c => {
-          ctx.beginPath();
-          ctx.fillStyle = c.color;
-          ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2, true);
-          ctx.fill();
-        });
-        update();
-      }
-
-      function update() {
-        confetti.forEach(c => {
-          c.y += Math.cos(c.d) + 2 + c.r / 2;
-          c.x += Math.sin(c.d);
-          if (c.y > canvas.height) {
-            c.y = -10;
-            c.x = Math.random() * canvas.width;
+        noBtn.onclick = () => {
+          noClicks++;
+          yesBtn.style.transform = `scale(${1 + noClicks * 0.4})`;
+          if (noClicks === 2) {
+            noBtn.remove();
+            yesBtn.style.position = "relative";
+            yesBtn.style.margin = "0 auto";
+            yesBtn.style.display = "block";
           }
-        });
-      }
-
-      setInterval(draw, 20);
+        };
+        yesBtn.onclick = () => {
+          finalMessage.textContent = "YAŞASINNN! 🥳💖 Artık benim sevgilimsin!";
+          optionsContainer.innerHTML = "";
+        };
+      }, 3500);
     }
 
     showQuestion();
