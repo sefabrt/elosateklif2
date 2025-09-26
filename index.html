@@ -6,159 +6,221 @@
   <title>Sürpriz 💖</title>
   <style>
     body {
-      font-family: 'Comic Neue', cursive;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffe6f0, #ffcce0);
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
-      margin: 0;
       overflow: hidden;
     }
-    .container {
+    #container {
+      width: 100%;
+      max-width: 390px; /* iPhone 13 genişliği */
+      height: 100%;
+      max-height: 844px; /* iPhone 13 yüksekliği */
+      background: #fff0f5;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 20px;
+      box-sizing: border-box;
       text-align: center;
-      width: 90%;
-      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .question, .finalMessage {
-      font-size: 1.4rem;
+    h1 {
+      font-size: 22px;
+      color: #ff4d94;
       margin-bottom: 20px;
-      animation: fadeIn 0.8s ease;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .options button {
-      background: #fff;
+    button {
+      padding: 12px;
       border: none;
-      border-radius: 25px;
-      padding: 12px 25px;
-      margin: 8px;
-      font-size: 1.1rem;
+      border-radius: 12px;
+      font-size: 16px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.3s, background 0.3s;
     }
-    .options button:hover {
-      transform: scale(1.1);
+    button:hover {
+      transform: scale(1.05);
     }
     .emoji {
-      font-size: 2rem;
-      margin-top: 10px;
-      animation: popIn 0.6s ease;
+      font-size: 30px;
+      margin-top: 15px;
+      animation: fadeIn 0.6s ease-in-out;
     }
-    @keyframes popIn {
-      from { opacity: 0; transform: scale(0.5); }
-      to { opacity: 1; transform: scale(1); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8);}
+      to { opacity: 1; transform: scale(1);}
     }
-    .finalMessage {
-      font-size: 1.6rem;
+    #finalMessage {
+      font-size: 20px;
+      color: #e60073;
       font-weight: bold;
-      color: #fff;
-      margin-top: 20px;
-      min-height: 50px;
+      margin-bottom: 20px;
+      min-height: 60px;
+      white-space: pre-line;
+      animation: fadeIn 0.8s ease-in-out;
     }
-    .hidden {
-      display: none;
+    #finalOptions {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    #yesBtn {
+      background: #ff66b2;
+      color: white;
+      z-index: 10;
+      position: relative;
+    }
+    #noBtn {
+      background: #999;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="questionContainer" class="question"></div>
+  <div id="container">
+    <h1 id="question">Hoşgeldin 💖</h1>
     <div class="options" id="options"></div>
-    <div id="emojiContainer"></div>
-    <div id="finalMessage" class="finalMessage hidden"></div>
+    <div id="emoji"></div>
+    <div id="finalMessage"></div>
+    <div id="finalOptions"></div>
   </div>
 
   <script>
     const questions = [
-      { q: "Bugün kendinizi nasıl hissediyorsunuz eloş hanım?", a: ["Çok iyi", "İdare eder", "Daha iyi olabilirdi"] },
-      { q: "Bu yıl akademik olarak başarılı olacağını düşünüyor musun?", a: ["Evet", "Belki", "Hayır"] },
-      { q: "Sence yıllar sonra evlenir miyiz?", a: ["Kesinlikle", "Belki", "Sanmam"] },
-      { q: "Sence ben gerçekten seni seviyor muyum?", a: ["Evet", "Hayır 🙄"] }
+      {
+        q: "Bugün kendinizi nasıl hissediyorsunuz Eloş hanım?",
+        options: ["Çok iyi 😍", "İyi 🙂", "Kötü 😔"],
+        emojis: ["🥳", "😊", "💔"]
+      },
+      {
+        q: "Bu yıl akademik olarak başarılı olacağını düşünüyor musun?",
+        options: ["Evet 💪", "Hayır 😅"],
+        emojis: ["📚✨", "😴📉"]
+      },
+      {
+        q: "Sence yıllar sonra evlenir miyiz?",
+        options: ["Evet 💍", "Hayır 🙈"],
+        emojis: ["💒", "😢"]
+      },
+      {
+        q: "Sence ben gerçekten seni seviyor muyum?",
+        options: ["Evet ❤️", "Hayır 😒"],
+        emojis: ["💖", "🤨"]
+      }
     ];
 
-    const emojis = ["😊", "🥰", "😍", "🤭", "💖"];
-    let currentQuestion = 0;
-
-    const questionContainer = document.getElementById("questionContainer");
-    const optionsContainer = document.getElementById("options");
-    const emojiContainer = document.getElementById("emojiContainer");
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const emojiEl = document.getElementById("emoji");
     const finalMessage = document.getElementById("finalMessage");
+    const finalOptions = document.getElementById("finalOptions");
+
+    let current = 0;
+    let noClickCount = 0;
 
     function showQuestion() {
-      if (currentQuestion < questions.length) {
-        const q = questions[currentQuestion];
-        questionContainer.textContent = q.q;
-        optionsContainer.innerHTML = "";
-        q.a.forEach(answer => {
+      if (current < questions.length) {
+        const q = questions[current];
+        questionEl.textContent = q.q;
+        optionsEl.innerHTML = "";
+        emojiEl.innerHTML = "";
+        q.options.forEach((opt, i) => {
           const btn = document.createElement("button");
-          btn.textContent = answer;
-          btn.onclick = () => handleAnswer();
-          optionsContainer.appendChild(btn);
+          btn.textContent = opt;
+          btn.onclick = () => {
+            emojiEl.innerHTML = `<div class="emoji">${q.emojis[i]}</div>`;
+            setTimeout(() => {
+              current++;
+              showQuestion();
+            }, 1000); // emoji biraz kalıyor sonra yeni soru geliyor
+          };
+          optionsEl.appendChild(btn);
         });
       } else {
-        showFinalMessage();
+        showFinal();
       }
     }
 
-    function handleAnswer() {
-      optionsContainer.innerHTML = "";
-      questionContainer.textContent = "";
-      const emoji = document.createElement("div");
-      emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      emoji.className = "emoji";
-      emojiContainer.innerHTML = "";
-      emojiContainer.appendChild(emoji);
-
-      setTimeout(() => {
-        emojiContainer.innerHTML = "";
-        currentQuestion++;
-        showQuestion();
-      }, 1200);
+    // Harf harf yazı efekti
+    function typeWriterEffect(element, text, speed = 120) {
+      element.textContent = "";
+      let i = 0;
+      function typing() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(typing, speed);
+        }
+      }
+      typing();
     }
 
-    function showFinalMessage() {
-      finalMessage.classList.remove("hidden");
-      typeWriter("ELAAA... UZUN LAFIN KISASI... SEVGİLİM OLUR MUSUN 💍");
-      showYesNoButtons();
+    function showFinal() {
+      questionEl.textContent = "";
+      optionsEl.innerHTML = "";
+      emojiEl.innerHTML = "";
+
+      typeWriterEffect(finalMessage, "ELAAA... UZUN LAFIN KISASI... SEVGİLİM OLUR MUSUN 💍", 120);
+
+      finalOptions.innerHTML = `
+        <button id="yesBtn">Evet 💖</button>
+        <button id="noBtn">Hayır 🙃</button>
+      `;
+
+      const yesBtn = document.getElementById("yesBtn");
+      const noBtn = document.getElementById("noBtn");
+
+      yesBtn.onclick = () => {
+        finalMessage.textContent = "SENİ ÇOK SEVİYORUM 💘💍🎉";
+        finalOptions.innerHTML = "";
+        confettiEffect();
+      };
+
+      noBtn.onclick = () => {
+        noClickCount++;
+        yesBtn.style.transform = `scale(${1 + noClickCount * 0.3})`;
+        yesBtn.style.zIndex = "10";
+
+        if (noClickCount >= 2) {
+          noBtn.remove();
+          yesBtn.style.margin = "0 auto";
+          yesBtn.style.display = "block";
+        }
+      };
     }
 
-    function typeWriter(text, i = 0) {
-      if (i < text.length) {
-        finalMessage.textContent += text.charAt(i);
-        setTimeout(() => typeWriter(text, i + 1), 120);
+    function confettiEffect() {
+      for (let i = 0; i < 30; i++) {
+        const conf = document.createElement("div");
+        conf.textContent = "💍";
+        conf.style.position = "fixed";
+        conf.style.left = Math.random() * 100 + "vw";
+        conf.style.top = "-20px";
+        conf.style.fontSize = "24px";
+        conf.style.animation = `fall ${2 + Math.random() * 2}s linear forwards`;
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 4000);
       }
     }
 
-    function showYesNoButtons() {
-      setTimeout(() => {
-        optionsContainer.innerHTML = `
-          <button id="yesBtn">Evet 💖</button>
-          <button id="noBtn">Hayır 🙃</button>
-        `;
-        let yesBtn = document.getElementById("yesBtn");
-        let noBtn = document.getElementById("noBtn");
-        let noClicks = 0;
-
-        noBtn.onclick = () => {
-          noClicks++;
-          yesBtn.style.transform = `scale(${1 + noClicks * 0.4})`;
-          if (noClicks === 2) {
-            noBtn.remove();
-            yesBtn.style.position = "relative";
-            yesBtn.style.margin = "0 auto";
-            yesBtn.style.display = "block";
-          }
-        };
-        yesBtn.onclick = () => {
-          finalMessage.textContent = "YAŞASINNN! 🥳💖 Artık benim sevgilimsin!";
-          optionsContainer.innerHTML = "";
-        };
-      }, 3500);
-    }
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes fall {
+        to { transform: translateY(100vh); }
+      }
+    `;
+    document.head.appendChild(style);
 
     showQuestion();
   </script>
